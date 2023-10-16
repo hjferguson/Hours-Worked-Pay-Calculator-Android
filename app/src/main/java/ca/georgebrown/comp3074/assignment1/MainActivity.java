@@ -1,16 +1,20 @@
 package ca.georgebrown.comp3074.assignment1;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -38,13 +42,27 @@ public class MainActivity extends AppCompatActivity {
         overtimePay = findViewById(R.id.OvertimePay);
         tax = findViewById(R.id.Tax);
         totalPay = findViewById(R.id.TotalPay);
-
+        Toolbar toolBar = (Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolBar);
 
         calculateRate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String hoursWorkedText = hoursWorked.getText().toString();
                 String hourlyRateText = hourlyRate.getText().toString();
+                //if field empty, app crashes. added this to handle that edge case
+                if(hoursWorkedText.isEmpty() || hourlyRateText.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Both fields must be filled out", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //I noticed the keyboard takes up too much space, and you need to minimize to see
+                //googled how to lower the keyboard after pressing on the button
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+
 
                 //convert for the calculations
                 double pay;
@@ -68,14 +86,14 @@ public class MainActivity extends AppCompatActivity {
 
 
                 if(!hasOvertime){
-                    calculatedPay.setText(String.format("%.2f", pay));
-                    overtimePay.setText("N/A");
+                    calculatedPay.setText("Normal pay: " + String.format("%.2f", pay));
+                    overtimePay.setText("Overtime pay: N/A");
                 }else{
-                    calculatedPay.setText("N/A");
-                    overtimePay.setText(String.format("%.2f", pay));
+                    calculatedPay.setText("Normal pay: N/A");
+                    overtimePay.setText("Overtime Pay: " + String.format("%.2f", pay));
                 }
-                tax.setText(String.format("%.2f", taxAmount));
-                totalPay.setText(String.format("%.2f", totalPayout));
+                tax.setText("Tax: " + String.format("%.2f", taxAmount));
+                totalPay.setText("Total pay: " + String.format("%.2f", totalPayout));
             }
         });
     }
